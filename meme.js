@@ -1,13 +1,13 @@
 export default async function handler(req, res) {
-  // CORS Headers
+  // ⚡ CORS Headers - এটি গিটহাব থেকে আসা যেকোনো রিকোয়েস্টকে অনুমতি দেবে
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*'); 
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
 
+  // OPTIONS রিকোয়েস্ট সাথে সাথে হ্যান্ডেল করা (Pre-flight)
   if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
+    return res.status(200).end();
   }
 
   if (req.method !== 'POST') {
@@ -16,12 +16,10 @@ export default async function handler(req, res) {
 
   try {
     const { prompt } = req.body;
-
-    // 🔒 Vercel ড্যাশবোর্ড থেকে চাবি রিড করবে, কোডে হাইড থাকবে
     const HUGGINGFACE_TOKEN = process.env.HUGGINGFACE_TOKEN; 
 
     if (!HUGGINGFACE_TOKEN) {
-      return res.status(500).json({ error: 'Hugging Face Token is missing in Vercel settings.' });
+      return res.status(500).json({ error: 'Hugging Face Token is missing.' });
     }
 
     const hfResponse = await fetch(
