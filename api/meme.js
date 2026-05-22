@@ -15,31 +15,21 @@ export default async function handler(req, res) {
 
   try {
     const { prompt } = req.body;
-    const HUGGINGFACE_TOKEN = process.env.HUGGINGFACE_TOKEN; 
 
-    if (!HUGGINGFACE_TOKEN) {
-      return res.status(500).json({ error: 'Hugging Face Token is missing.' });
+    if (!prompt) {
+      return res.status(400).json({ error: 'Prompt is required' });
     }
 
-    // 🚀 এখানে সুপার-ফাস্ট SDXL মডেলটি ব্যাকআপ হিসেবে আপডেট করা হলো
-    const hfResponse = await fetch(
-      "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0",
-      {
-        headers: { 
-          Authorization: `Bearer ${HUGGINGFACE_TOKEN}`,
-          "Content-Type": "application/json"
-        },
-        method: "POST",
-        body: JSON.stringify({ inputs: prompt }),
-      }
-    );
+    // 🚀 টোকেন-লেস হাই-স্পিড আল্ট্রা-রিলিজড ইমেজ এপিআই ইঞ্জিন
+    const targetUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=512&height=512&nologo=true&seed=${Math.floor(Math.random() * 100000)}`;
 
-    if (!hfResponse.ok) {
-      const errorText = await hfResponse.text();
-      return res.status(500).json({ error: 'AI Model Server Error', details: errorText });
+    const imgResponse = await fetch(targetUrl);
+
+    if (!imgResponse.ok) {
+      return res.status(500).json({ error: 'AI Generation Engine Down' });
     }
 
-    const arrayBuffer = await hfResponse.arrayBuffer();
+    const arrayBuffer = await imgResponse.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
     const base64Image = buffer.toString('base64');
     
