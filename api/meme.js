@@ -1,5 +1,5 @@
 export default async function handler(req, res) {
-  // CORS Headers
+  // ফুল ওপেন CORS সেটিংস
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*'); 
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
@@ -21,8 +21,9 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Hugging Face Token is missing.' });
     }
 
+    // 🚀 এখানে সুপার-ফাস্ট SDXL মডেলটি ব্যাকআপ হিসেবে আপডেট করা হলো
     const hfResponse = await fetch(
-      "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2-1",
+      "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0",
       {
         headers: { 
           Authorization: `Bearer ${HUGGINGFACE_TOKEN}`,
@@ -34,7 +35,8 @@ export default async function handler(req, res) {
     );
 
     if (!hfResponse.ok) {
-      return res.status(500).json({ error: 'AI Model Server Error' });
+      const errorText = await hfResponse.text();
+      return res.status(500).json({ error: 'AI Model Server Error', details: errorText });
     }
 
     const arrayBuffer = await hfResponse.arrayBuffer();
