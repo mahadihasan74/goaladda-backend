@@ -1,11 +1,10 @@
 export default async function handler(req, res) {
-  // ⚡ CORS Headers - এটি গিটহাব থেকে আসা যেকোনো রিকোয়েস্টকে অনুমতি দেবে
+  // ফুল ওপেন CORS সেটিংস
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*'); 
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
 
-  // OPTIONS রিকোয়েস্ট সাথে সাথে হ্যান্ডেল করা (Pre-flight)
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
@@ -38,10 +37,14 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'AI Model Server Error' });
     }
 
-    const buffer = await hfResponse.arrayBuffer();
+    const arrayBuffer = await hfResponse.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
     
-    res.setHeader('Content-Type', 'image/jpeg');
-    return res.send(Buffer.from(buffer));
+    // ইমেজটিকে বেইজ-৬৪ টেক্সটে কনভার্ট করে সেফলি পাঠানো হচ্ছে
+    const base64Image = buffer.toString('base64');
+    
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(200).json({ image: base64Image });
 
   } catch (error) {
     return res.status(500).json({ error: error.message });
